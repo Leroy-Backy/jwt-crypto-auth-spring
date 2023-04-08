@@ -9,6 +9,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 public class AuthService {
@@ -17,28 +19,34 @@ public class AuthService {
   private final JwtService jwtService;
   private final AuthenticationManager authManager;
 
-  public AuthenticationResponse register(UserDto userDto) {
-    User user = User.builder()
-        .firstName(userDto.getFirstName())
-        .lastName(userDto.getLastName())
-        .username(userDto.getUsername())
-        .password(passwordEncoder.encode(userDto.getPassword()))
-        .role(Role.ROLE_USER)
-        .build();
-
-    userRepository.save(user);
-
-    return new AuthenticationResponse(jwtService.generateToken(user.getUsername()));
+  public String getUserNonce(String publicAddress) {
+    Optional<User> existedUser = userRepository.findByPublicAddress(publicAddress);
+    
+    if(existedUser.isPresent()) {
+      return existedUser.get().getNonce();
+    } else {
+      User user = User.builder()
+          .publicAddress(publicAddress)
+          .nonce(passwordEncoder.encode(""))
+          .role(Role.ROLE_USER)
+          .build();
+      
+      userRepository.save(user);
+      
+      return user.getNonce();
+    }
   }
 
   public AuthenticationResponse authenticate(AuthRequest authRequest) {
     authManager.authenticate(
         new UsernamePasswordAuthenticationToken(
-            authRequest.getUsername(),
-            authRequest.getPassword()
+            authRequest.getPublicAddress(),
+            authRequest.getSignature()
         )
     );
+    
+    userRepository.findByPublicAddress(authRequest.getPublicAddress()).get().setNonce(passwordEncoder.encode(""));
     // at this point use
-    return new AuthenticationResponse(jwtService.generateToken(authRequest.getUsername()));
+    return new AuthenticationResponse(jwtService.generateToken(authRequest.getPublicAddress()));
   }
 }

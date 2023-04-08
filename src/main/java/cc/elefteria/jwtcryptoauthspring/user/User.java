@@ -23,12 +23,11 @@ public class User implements UserDetails {
   private String firstName;
   private String lastName;
   private String username;
-  private String password;
-//  @Column(unique = true)
-//  private String nickname;
-//  @Column(unique = true)
-//  private String publicAddress;
-//  private String nonce;
+  @Column(unique = true)
+  private String nickname;
+  @Column(unique = true)
+  private String publicAddress;
+  private String nonce;
   @Enumerated(EnumType.STRING)
   private Role role;
 
@@ -37,15 +36,15 @@ public class User implements UserDetails {
     return role.getAuthorities();
   }
 
-//  @Override
-//  public String getPassword() {
-//    return nonce;
-//  }
-//
-//  @Override
-//  public String getUsername() {
-//    return publicAddress;
-//  }
+  @Override
+  public String getPassword() {
+    return nonce;
+  }
+
+  @Override
+  public String getUsername() {
+    return publicAddress;
+  }
 
   @Override
   public boolean isAccountNonExpired() {
