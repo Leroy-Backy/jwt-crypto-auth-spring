@@ -11,11 +11,6 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
   
   private final AuthService authService;
-  
-//  @PostMapping("/register")
-//  public ResponseEntity<AuthenticationResponse> register(@RequestBody UserDto userDto) {
-//    return ResponseEntity.ok(authService.register(userDto));
-//  }
 
   @GetMapping("/nonce/{publicAddress}")
   public ResponseEntity<String> getUserNonce(@PathVariable String publicAddress) {
